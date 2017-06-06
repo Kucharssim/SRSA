@@ -1,16 +1,21 @@
 ##########################################################
 ########### DEFINE USEFUL FUNCTIONS FOR SRSA #############
 ##########################################################
-
+#
 # Define the update function of the SR matrix
 update <- function(M, I, a, g, i, j) { a * (I[,j] + g*M[,j] - M[,i]) }
 
 # SRSA function - D=data for one participant on one trial
 SRSA <- function(D, nAOI, a, g, mat=TRUE, M=matrix(0, nAOI, nAOI)){
   I <- diag(nAOI)
+  
+  if(nrow(D)==0){
+    return(rep(NA, nAOI^2))
+  }
   for(t in 1:nrow(D)){
     i <- D[t,1]
     j <- D[t,2]
+    #print(1/t)
     M[,i] <- M[,i] + update(M, I, a, g, i, j)
   }
   
@@ -64,7 +69,7 @@ comp.SRSA <- function(fullD, nAOI, a, g, averageItems=TRUE, normalize=TRUE) {
     
     else{
       for (i in Participants){
-        Average.Matrices[which(i==Participants),] <- rowMeans(Matrices[which(i==Participants),,])
+        Average.Matrices[which(i==Participants),] <- rowMeans(Matrices[which(i==Participants),,], na.rm = TRUE)
       }
     }
 
