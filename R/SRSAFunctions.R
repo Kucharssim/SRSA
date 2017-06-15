@@ -150,3 +150,68 @@ DoSRSA <- function(D, nAOI, criterion, alpha, gamma, nStrat=2, hayes=TRUE){
               weightedstrategy=weighted.strategy)
   )
 }
+
+
+
+optimR <- function(D, criterion, nStrat, hayes, resolution=1/100){
+  D <- as.data.frame(D)
+  criterion <- as.vector(criterion)
+  require(parallel)
+  require(SRSA)
+  
+  cores <- detectCores()-1
+  cl <- makeCluster(cores)
+  grid <- grid <- seq(0,1,by=resolution)
+  e.grid <- expand.grid(a=grid, g=grid)
+  clusterExport(cl, varlist=c("CostSRSA", "Cost", "SRSA",
+                              "update", "comp.SRSA", "highestCorr"),
+              envir = globalenv())
+  R <- clusterMap(cl, function(a, g) {CostSRSA(c(a,g), D, 6, criterion, 2, TRUE)},
+                  e.grid$a, e.grid$g)
+
+  stopCluster(cl)
+  R <- t(matrix(1 - unlist(R), ncol=length(grid)))
+  colnames(R) <- rownames(R) <- grid
+
+  filled.contour(grid, grid, R, zlim=c(0,ceiling(max(R)*10)/10), 
+                 color.palette = colorRamps::matlab.like,
+                 xlab="Gamma", ylab="Alpha", main="R^2 map")
+  
+  return(list(R=R[which(R==max(R), arr.ind = TRUE)],
+              par=grid[which(R==max(R), arr.ind = TRUE)][2:1]))
+}
+
+
+crossSR <- function(D, nAOI, criterion, nStrat=2, hayes=TRUE){
+  pb <- txtProgressBar(min = 0, max = length(criterion), style = 3)
+  fits <- lapply(unique(D[,1]), function(leave.out){
+    
+    train <- as.data.frame(D[D[,1]!=leave.out,])
+    test <- as.data.frame(D[D[,1]==leave.out,])
+    
+    leave <- which(unique(D[,1])==leave.out)
+    setTxtProgressBar(pb, leave)
+    
+    par <- optimR(D, criterion, nStrat, hayes, 1/20)
+    
+    res <- DoSRSA(train, 6, criterion[-leave],
+                  par$par[1], par$par[2], nStrat, hayes)
+    
+    if(abs(par$par[1]-res$par[1])>1/20 |
+       abs(par$par[2]-res$par[2])>1/20){
+      warning("the solution did not converge towards the global optimum")
+    }
+    sr.leave <- comp.SRSA(test, 6, res$par[1], res$par[2], TRUE, FALSE)
+    mean.sr <- colMeans(res$rSRSA, na.rm = TRUE)
+    sd.sr <- apply(res$rSRSA, 2, sd, na.rm = TRUE)
+    
+    sr.leave <- (sr.leave-mean.sr)/sd.sr
+    sr.leave[sr.leave==Inf] <- 0
+    sr.leave[is.na(sr.leave)] <- 0
+    
+    pred <- sr.leave %*% res$weightedstrategy
+    list(prediction=pred, parameters=res$par)
+  })
+  
+  fits
+}
