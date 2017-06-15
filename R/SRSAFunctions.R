@@ -182,7 +182,7 @@ optimR <- function(D, criterion, nStrat, hayes, resolution=1/100){
 }
 
 
-crossSR <- function(D, nAOI, criterion, nStrat=2, hayes=TRUE){
+crossSR <- function(D, nAOI, criterion, nStrat=2, hayes=TRUE, resolution=1/20){
   pb <- txtProgressBar(min = 0, max = length(criterion), style = 3)
   fits <- lapply(unique(D[,1]), function(leave.out){
     
@@ -193,13 +193,13 @@ crossSR <- function(D, nAOI, criterion, nStrat=2, hayes=TRUE){
     setTxtProgressBar(pb, leave)
     
     #par(mfrow=rep(ceiling(sqrt(length(criterion))),2))
-    par <- optimR(D, criterion, nStrat, hayes, 1/50)
+    par <- optimR(D, criterion, nStrat, hayes, resolution)
     
     res <- DoSRSA(train, 6, criterion[-leave],
                   par$par[1], par$par[2], nStrat, hayes)
     
-    if(abs(par$par[1]-res$par[1])>1/50 |
-       abs(par$par[2]-res$par[2])>1/50){
+    if(abs(par$par[1]-res$par[1])>resolution |
+       abs(par$par[2]-res$par[2])>resolution){
       warning("the solution did not converge towards the global optimum. Participant:", leave.out)
     }
     
