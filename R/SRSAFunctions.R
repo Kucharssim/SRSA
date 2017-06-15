@@ -193,7 +193,7 @@ crossSR <- function(D, nAOI, criterion, nStrat=2, hayes=TRUE, resolution=1/20){
     setTxtProgressBar(pb, leave)
     
     #par(mfrow=rep(ceiling(sqrt(length(criterion))),2))
-    par <- optimR(D, criterion, nStrat, hayes, resolution)
+    par <- optimR(train, criterion[-leave], nStrat, hayes, resolution)
     
     res <- DoSRSA(train, 6, criterion[-leave],
                   par$par[1], par$par[2], nStrat, hayes)
