@@ -192,21 +192,22 @@ crossSR <- function(D, nAOI, criterion, nStrat=2, hayes=TRUE){
     leave <- which(unique(D[,1])==leave.out)
     setTxtProgressBar(pb, leave)
     
-    par <- optimR(D, criterion, nStrat, hayes, 1/20)
+    par <- optimR(D, criterion, nStrat, hayes, 1/50)
     
     res <- DoSRSA(train, 6, criterion[-leave],
                   par$par[1], par$par[2], nStrat, hayes)
     
-    if(abs(par$par[1]-res$par[1])>1/20 |
-       abs(par$par[2]-res$par[2])>1/20){
-      warning("the solution did not converge towards the global optimum")
+    if(abs(par$par[1]-res$par[1])>1/50 |
+       abs(par$par[2]-res$par[2])>1/50){
+      warning("the solution did not converge towards the global optimum. Participant:", leave.out)
     }
+    
     sr.leave <- comp.SRSA(test, 6, res$par[1], res$par[2], TRUE, FALSE)
     mean.sr <- colMeans(res$rSRSA, na.rm = TRUE)
     sd.sr <- apply(res$rSRSA, 2, sd, na.rm = TRUE)
     
     sr.leave <- (sr.leave-mean.sr)/sd.sr
-    sr.leave[sr.leave==Inf] <- 0
+    sr.leave[abs(sr.leave)==Inf] <- 0
     sr.leave[is.na(sr.leave)] <- 0
     
     pred <- sr.leave %*% res$weightedstrategy
