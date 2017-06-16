@@ -153,7 +153,7 @@ DoSRSA <- function(D, nAOI, criterion, alpha, gamma, nStrat=2, hayes=TRUE){
 
 
 
-optimR <- function(D, criterion, nStrat, hayes, resolution=1/100){
+optimR <- function(D, nAOI=6, criterion, nStrat, hayes, resolution=1/100){
   D <- as.data.frame(D)
   criterion <- as.vector(criterion)
   require(parallel)
@@ -166,7 +166,7 @@ optimR <- function(D, criterion, nStrat, hayes, resolution=1/100){
   clusterExport(cl, varlist=c("CostSRSA", "Cost", "SRSA",
                               "update", "comp.SRSA", "highestCorr"),
               envir = globalenv())
-  R <- clusterMap(cl, function(a, g) {CostSRSA(c(a,g), D, 6, criterion, 2, TRUE)},
+  R <- clusterMap(cl, function(a, g) {CostSRSA(c(a,g), D, nAOI, criterion, 2, TRUE)},
                   e.grid$a, e.grid$g)
 
   stopCluster(cl)
