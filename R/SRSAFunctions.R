@@ -166,7 +166,7 @@ optimR <- function(D, nAOI=6, criterion, nStrat, hayes, resolution=1/100){
   clusterExport(cl, varlist=c("CostSRSA", "Cost", "SRSA",
                               "update", "comp.SRSA", "highestCorr"),
               envir = globalenv())
-  R <- clusterMap(cl, function(a, g) {CostSRSA(c(a,g), D, nAOI, criterion, 2, TRUE)},
+  R <- clusterMap(cl, function(a, g) {CostSRSA(c(a,g), D, nAOI, criterion, 2, hayes)},
                   e.grid$a, e.grid$g)
 
   stopCluster(cl)
