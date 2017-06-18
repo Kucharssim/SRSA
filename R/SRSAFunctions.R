@@ -120,7 +120,7 @@ highestCorr <- function(vectors, criterion, data, hayes){
 
 DoSRSA <- function(D, nAOI, criterion, alpha, gamma, nStrat=2, hayes=TRUE){
   o <- optim(c(alpha, gamma), CostSRSA, gr=NULL, D, nAOI, criterion, nStrat, hayes, 
-             method="Nelder-Mead", lower=0, upper=1)
+             method="L-BFGS-B", lower=0, upper=1)
   
   matSRSA <- comp.SRSA(D, nAOI, o$par[1], o$par[2])
   unstdSRSA <- comp.SRSA(D, nAOI, o$par[1], o$par[2], normalize = FALSE)
@@ -211,7 +211,7 @@ crossSR <- function(D, nAOI, criterion, nStrat=2, hayes=TRUE, resolution=1/20){
     sr.leave[abs(sr.leave)==Inf] <- 0
     sr.leave[is.na(sr.leave)] <- 0
     
-    pred <- sr.leave %*% res$weightedstrategy
+    pred <- sr.leave %*% res$weightedstrategy + res$coefficients[1,1]
     list(prediction=pred, parameters=res$par)
   })
   
