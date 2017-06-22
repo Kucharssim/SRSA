@@ -1,7 +1,7 @@
 plotSR <- function(values, title=NULL, includeVal = FALSE,
                    nAOI=sqrt(length(values)), g=NULL){
   m <- matrix(values, ncol=nAOI)
-  if(g==1) {stop("gamma cannot be equal to 1")
+  if(g==1) {stop("gamma cannot be equal to 1")}
   if(!is.null(g)) {
     minmax <- c(0, 1/(1-g))
   } else {
