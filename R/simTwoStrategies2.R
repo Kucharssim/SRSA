@@ -262,3 +262,5 @@ repSimulateFixed <- function(k, n, n.strategy.one, d=1, items=1, noise=0){
                           noise=0),
             simplify = FALSE)
 }
+
+
