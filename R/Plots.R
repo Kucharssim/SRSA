@@ -7,9 +7,9 @@ plotSR <- function(values, title=NULL, includeVal = FALSE,
   } else {
     minmax <- c(min(m), max(m))
   }
-  corrplot(m, method="shade", is.corr = FALSE,
-           tl.col = "black", tl.srt = 0, tl.offset = 0.7,
-           p.mat=m, insig = ifelse(includeVal, "p-value", "n"),
-           sig.level = min(m)-1, cl.lim=minmax)
+  corrplot::corrplot(m, method="shade", is.corr = FALSE,
+                     tl.col = "black", tl.srt = 0, tl.offset = 0.7,
+                     p.mat=m, insig = ifelse(includeVal, "p-value", "n"),
+                     sig.level = min(m)-1, cl.lim=minmax)
   text(nAOI/2+0.5, nAOI + 1.5, title, cex=2)
 }
