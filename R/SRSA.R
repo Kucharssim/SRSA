@@ -172,43 +172,43 @@ orderCor <- function(projections, target){
 
 #### cross validation ####
 
-cv.srsaPCA(D, nAOI, target, nStrat=2, nComp=NULL, sort.cor=TRUE,
-           rotate=FALSE, parallel=FALSE, covariate=NULL, resolution){
-  
-  pb <- txtProgressBar(min = 0, max = length(criterion), style = 3)
-  fits <- lapply(unique(D[,1]), function(leave.out){
-    
-    train <- as.data.frame(D[D[,1]!=leave.out,])
-    test <- as.data.frame(D[D[,1]==leave.out,])
-    
-    leave <- which(unique(D[,1])==leave.out)
-    setTxtProgressBar(pb, leave)
-    
-    par <- mapPCA(train, nAOI, criterion[-leave], nStrat, nComp, covariate,
-                  resolution, rotate)
-    
-    res <- srsaPCA(train, nAOI, criterion[-leave],
-                  par$par[1], par$par[2], nStrat, nComp,
-                  sort.cor, rotate, parallel=FALSE,
-                  covariate)
-    
-    if(abs(par$par[1]-res$par[1])>resolution |
-       abs(par$par[2]-res$par[2])>resolution){
-      warning("the solution did not converge towards the global optimum. Participant:", leave.out)
-    }
-    
-    sr.leave <- comp.SRSA(test, 6, res$par[1], res$par[2], TRUE, FALSE)
-    mean.sr <- colMeans(res$rSRSA, na.rm = TRUE)
-    sd.sr <- apply(res$rSRSA, 2, sd, na.rm = TRUE)
-    
-    sr.leave <- (sr.leave-mean.sr)/sd.sr
-    sr.leave[abs(sr.leave)==Inf] <- 0
-    sr.leave[is.na(sr.leave)] <- 0
-    
-    pred <- sr.leave %*% res$weightedstrategy + res$coefficients[1,1]
-    list(prediction=pred, parameters=res$par)
-  })
-  
-  fits
-  
-}
+#cv.srsaPCA(D, nAOI, target, nStrat=2, nComp=NULL, sort.cor=TRUE,
+#           rotate=FALSE, parallel=FALSE, covariate=NULL, resolution){
+#  
+#  pb <- txtProgressBar(min = 0, max = length(criterion), style = 3)
+#  fits <- lapply(unique(D[,1]), function(leave.out){
+#    
+#    train <- as.data.frame(D[D[,1]!=leave.out,])
+#    test <- as.data.frame(D[D[,1]==leave.out,])
+#    
+#    leave <- which(unique(D[,1])==leave.out)
+#    setTxtProgressBar(pb, leave)
+#    
+#    par <- mapPCA(train, nAOI, criterion[-leave], nStrat, nComp, covariate,
+#                  resolution, rotate)
+#    
+#    res <- srsaPCA(train, nAOI, criterion[-leave],
+#                  par$par[1], par$par[2], nStrat, nComp,
+#                  sort.cor, rotate, parallel=FALSE,
+#                  covariate)
+#    
+#    if(abs(par$par[1]-res$par[1])>resolution |
+#       abs(par$par[2]-res$par[2])>resolution){
+#      warning("the solution did not converge towards the global optimum. Participant:", leave.out)
+#    }
+#    
+#    sr.leave <- comp.SRSA(test, 6, res$par[1], res$par[2], TRUE, FALSE)
+#    mean.sr <- colMeans(res$rSRSA, na.rm = TRUE)
+#    sd.sr <- apply(res$rSRSA, 2, sd, na.rm = TRUE)
+#    
+#    sr.leave <- (sr.leave-mean.sr)/sd.sr
+#    sr.leave[abs(sr.leave)==Inf] <- 0
+#    sr.leave[is.na(sr.leave)] <- 0
+#    
+#    pred <- sr.leave %*% res$weightedstrategy + res$coefficients[1,1]
+#    list(prediction=pred, parameters=res$par)
+#  })
+#  
+#  fits
+#  
+#}
