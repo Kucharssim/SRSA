@@ -13,7 +13,10 @@
 #' @return matrix or vector of the Successor Representation values. The vector is columnwise unfold of a matrix.
 
 sr <- function(data, nAOI, a=0, g=0, converged = FALSE, mat=TRUE){
-  data <- data[,3:4]
+  if(ncol(data)==4){
+    data <- data[,3:4]
+  }
+  
   I <- diag(nAOI) 
   M <- matrix(0, nAOI, nAOI)
   
@@ -22,7 +25,7 @@ sr <- function(data, nAOI, a=0, g=0, converged = FALSE, mat=TRUE){
     
     i <- factor(data$i, levels = 1:nAOI)
     j <- factor(data$j, levels = 1:nAOI)
-    trans <- table(j,i)
+    trans <- table(j, i)
     trans <- prop.table(trans, 2)
     M <- trans %*% solve(I - g * trans, tol = 1e-17)
     
@@ -57,23 +60,42 @@ updateSR <- function(M, I, a, g, i, j) { a * (I[,j] + g*M[,j] - M[,i]) }
 #' @param averageItems Logical. Should the matrices be averaged across items?
 #' @param normalize Logical. Should the matrix cells be normalized?
 srs <- function(data, nAOI, a, g, converged = FALSE,
-                averageItems = TRUE, normalize = FALSE, parallel=FALSE){
-
+                averageItems = TRUE, normalize = FALSE, parallel=FALSE,
+                correction=FALSE){
+  require(plyr)
   # compute the SR matrix per scanpath
-  M <-  plyr::ddply(.data=data, .variables = c('id', 'item'),
-                    .fun = sr, 
-                    nAOI=nAOI, a=a, g=g, mat=FALSE, 
-                    .drop = FALSE, .parallel = parallel)
+  M <-  ddply(.data=data, .variables = c('id', 'item'),
+              .fun = sr, 
+              nAOI=nAOI, a=a, g=g, mat=FALSE, 
+              .drop = FALSE, .parallel = parallel)
   
-  if(averageItems) {
+  
+  if(correction){
+    itemlength <- ddply(.data=data, .variables = c('id', 'item'),
+                        .fun = nrow)
+    totallength <- ddply(.data=data, .variables = 'id',
+                         .fun = nrow)
     
-    M <- aggregate(M, list(M$id), mean, na.rm = TRUE)[-c(1:3)]
-
-    if(normalize) {
-      suppressWarnings(
-        M <- scale(M)
-      )
-      M[is.nan(M)] <- 0
+    M[,-c(1,2)] <- sweep(M[,-c(1,2)], MARGIN = 1,
+                         STATS = itemlength[,3], FUN = '*')
+    
+    M <- aggregate(M, list(M$id), sum, na.rm = TRUE)[, -c(1:3), drop=FALSE]
+    
+    M <- sweep(M, 1, totallength[,2], FUN='/')
+    
+  } else if(averageItems) {
+    M <- aggregate(M, list(M$id), mean, na.rm = TRUE)[, -c(1:3), drop=FALSE]
+  }
+  
+  if(normalize) {
+    backup <- M
+    
+    suppressWarnings(
+      M <- scale(M)
+    )
+    
+    if(sum(is.nan(M)) != 0){
+      M[is.nan(M)] <- backup[is.nan(M)] 
     }
   }
   
