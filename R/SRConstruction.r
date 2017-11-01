@@ -16,6 +16,9 @@ sr <- function(data, nAOI, a=0, g=0, converged = FALSE, mat=TRUE){
   if(ncol(data)==4){
     data <- data[,3:4]
   }
+  if(nrow(data) <= 2) {
+    return(rep(NA, nAOI^2))
+  }
   
   I <- diag(nAOI) 
   M <- matrix(0, nAOI, nAOI)
