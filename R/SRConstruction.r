@@ -30,6 +30,7 @@ sr <- function(data, nAOI, a=0, g=0, converged = FALSE, mat=TRUE){
     j <- factor(data$j, levels = 1:nAOI)
     trans <- table(j, i)
     trans <- prop.table(trans, 2)
+	trans[is.nan(trans)] <- 0
     M <- trans %*% solve(I - g * trans, tol = 1e-17)
     
   } else {
