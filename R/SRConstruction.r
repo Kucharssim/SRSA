@@ -99,5 +99,6 @@ srs <- function(data, nAOI, a, g, converged = FALSE,
     }
   }
   
-  return(as.matrix(M))
+  return(M)
+  #return(as.matrix(M))
 }
