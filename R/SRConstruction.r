@@ -16,6 +16,9 @@ sr <- function(data, nAOI, a=0, g=0, converged = FALSE, mat=TRUE){
   if(ncol(data)==4){
     data <- data[,3:4]
   }
+  if(nrow(data) <= 2) {
+    return(rep(NA, nAOI^2))
+  }
   
   I <- diag(nAOI) 
   M <- matrix(0, nAOI, nAOI)
@@ -27,6 +30,7 @@ sr <- function(data, nAOI, a=0, g=0, converged = FALSE, mat=TRUE){
     j <- factor(data$j, levels = 1:nAOI)
     trans <- table(j, i)
     trans <- prop.table(trans, 2)
+	trans[is.nan(trans)] <- 0
     M <- trans %*% solve(I - g * trans, tol = 1e-17)
     
   } else {
@@ -66,7 +70,8 @@ srs <- function(data, nAOI, a, g, converged = FALSE,
   # compute the SR matrix per scanpath
   M <-  ddply(.data=data, .variables = c('id', 'item'),
               .fun = sr, 
-              nAOI=nAOI, a=a, g=g, mat=FALSE, 
+              nAOI=nAOI, a=a, g=g, 
+			  converged = converged, mat=FALSE, 
               .drop = FALSE, .parallel = parallel)
   
   
@@ -99,5 +104,6 @@ srs <- function(data, nAOI, a, g, converged = FALSE,
     }
   }
   
-  return(as.matrix(M))
+  return(M)
+  #return(as.matrix(M))
 }
